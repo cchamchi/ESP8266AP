@@ -95,20 +95,17 @@ void dumpClients()
 void dumpClientsOLED()
 {
   
-  int yp=2;
+  
   stat_info = wifi_softap_get_station_info();
   display.setCursor(0, 8);
-  display.print(address[0]);display.print(".");display.print(address[1]);display.print(".");display.print(address[2]);display.print(".");
+  display.print(address[0]);display.print(".");display.print(address[1]);display.print(".");display.print(address[2]);
+  display.setCursor(0, 2*8);
   while (stat_info != NULL)
   {
     IPaddress = &stat_info->ip;
-    address = IPaddress->addr;
-
-    display.setCursor(0, yp*8);
-    display.print(address[3]);
+    address = IPaddress->addr;   
+    display.print(".");display.print(address[3]);display.print(" ");
     stat_info = STAILQ_NEXT(stat_info, next);
-    yp++;
+    
   } 
 }
-
-
