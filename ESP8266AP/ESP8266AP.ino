@@ -13,6 +13,10 @@ IPAddress local_IP(192,168,5,1);
 IPAddress gateway(192,168,5,100);
 IPAddress subnet(255,255,255,0);
 
+struct station_info *stat_info;
+struct ip_addr *IPaddress;
+IPAddress address;
+
 void setup()
 {
 
@@ -32,8 +36,6 @@ void setup()
   Serial.print("Setting soft-AP ... ");
   Serial.println(WiFi.softAP(ssid,password) ? "Ready" : "Failed!");
 
-
-  display.println("Start AP");
   display.println(ssid);
   display.println(password);
   display.println(WiFi.softAPIP());
@@ -45,13 +47,68 @@ void setup()
 void loop()
 {
   int num=WiFi.softAPgetStationNum();
-  Serial.printf("Stations connected = %d\n",num );
-  display.setCursor(0, 5*8);
-  display.setTextColor(WHITE, BLACK);
-  display.print("          ");
-  display.setCursor(0, 5*8);
-  display.setTextColor(WHITE);  
-  display.printf("station=%d", num);
-  display.display();
+
+  if(num<1){
+    display.clearDisplay();
+    display.setCursor(0, 0);
+    display.println(ssid);
+    display.println(password);
+    display.println(WiFi.softAPIP());
+    display.println(" ");
+    display.print("No station");
+    display.display();
+    
+  }else{
+  
+    Serial.printf("Stations connected = %d\n",num );
+    dumpClients();
+
+    display.clearDisplay();
+    display.setCursor(0, 0);
+     
+    display.printf("station=%d", num);
+    dumpClientsOLED();
+    display.display();
+
+  }
   delay(3000);
+
+  
 }
+
+void dumpClients()
+{
+  Serial.print(" Clients:\r\n");
+  stat_info = wifi_softap_get_station_info();
+  while (stat_info != NULL)
+  {
+    IPaddress = &stat_info->ip;
+    address = IPaddress->addr;
+
+    Serial.print("\t");
+    Serial.print(address);
+    Serial.print("\r\n");
+    stat_info = STAILQ_NEXT(stat_info, next);
+  } 
+}
+
+void dumpClientsOLED()
+{
+  
+  int yp=2;
+  stat_info = wifi_softap_get_station_info();
+  display.setCursor(0, 8);
+  display.print(address[0]);display.print(".");display.print(address[1]);display.print(".");display.print(address[2]);display.print(".");
+  while (stat_info != NULL)
+  {
+    IPaddress = &stat_info->ip;
+    address = IPaddress->addr;
+
+    display.setCursor(0, yp*8);
+    display.print(address[3]);
+    stat_info = STAILQ_NEXT(stat_info, next);
+    yp++;
+  } 
+}
+
+
